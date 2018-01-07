@@ -25,8 +25,14 @@ public class AccountController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}")
-    public Account getOneAccount(@PathVariable long id) {
-        return accountService.getOneAccount(id);
+    public ResponseEntity<?> getOneAccount(@PathVariable long id) {
+        Account account = accountService.getOneAccount(id);
+
+        if (account == null){
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok().body(account);
     }
 
     @CrossOrigin
