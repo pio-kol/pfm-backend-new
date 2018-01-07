@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/accounts")
+@RequestMapping("/v1/accounts") // TODO [PK] - how to handle versions in more flexible way?
 public class AccountController {
 
     private AccountService accountService;
@@ -18,7 +18,7 @@ public class AccountController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/")
+    @GetMapping
     public List<Account> getAccounts() {
         return accountService.getAccounts();
     }
