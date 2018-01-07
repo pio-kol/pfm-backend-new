@@ -11,17 +11,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import pl.pfm.model.account.Account;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -37,7 +39,7 @@ public class AccountControllerTest {
     @Autowired
     private AccountRepository accountRepository;
 
-    private Account account1 = Account.builder().id(1).name("BZWBK").value(BigDecimal.TEN).build();
+    private Account account1 = Account.builder().id(1).name("BZWBK").value(new BigDecimal("10.12")).build();
 
     @Before
     public void beforeTest() throws Exception {
@@ -50,18 +52,19 @@ public class AccountControllerTest {
         loadAccount(account1);
 
         // when
-        mockMvc.perform(
+        MvcResult result = mockMvc.perform(
                 get("/v1/accounts")
                         .contentType(MediaType.APPLICATION_JSON_UTF8))
-
-                // then
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is((int) account1.getId()))) // TODO [PK] jsonPath interprets number as int
-                .andExpect(jsonPath("$[0].name", is(account1.getName())))
-                .andExpect(jsonPath("$[0].value", is(account1.getValue().doubleValue()))); // TODO [PK] jsonPath interprets number as double
+                .andReturn();
+
+        // then
+        List<Account> accounts = asListOfAccounts(result);
+
+        assertNotNull(accounts);
+        assertEquals(1, accounts.size());
+        assertEquals(account1, accounts.get(0));
     }
 
     @Test
@@ -98,5 +101,12 @@ public class AccountControllerTest {
 
     private String asJson(Account account) throws JsonProcessingException {
         return objectMapper.writeValueAsString(account);
+    }
+
+    private List<Account> asListOfAccounts(MvcResult result) throws IOException {
+        return objectMapper.readValue(
+                result.getResponse().getContentAsByteArray(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, Account.class)
+        );
     }
 }
