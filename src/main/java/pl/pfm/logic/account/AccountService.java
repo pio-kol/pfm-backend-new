@@ -20,17 +20,16 @@ public class AccountService {
         return accountRepository.findAll();
     }
 
-    public Account getOneAccount(long id) {
+    public Account getAccount(long id) {
         return accountRepository.findOne(id);
     }
 
-    public long postAccount(Account account) {
-        return accountRepository.save(account).getId();
+    public Account postAccount(Account account) {
+        return accountRepository.save(account);
     }
 
-    public boolean deleteAccount(long id) {
+    public void deleteAccount(long id) {
         accountRepository.delete(id);
-        return true;
     }
 
     public void putAccount(long id, Account account) {
@@ -38,6 +37,6 @@ public class AccountService {
         accountToUpdate.setName(account.getName());
         accountToUpdate.setValue(account.getValue());
 
-        accountRepository.save(account);
+        accountRepository.save(accountToUpdate);
     }
 }
